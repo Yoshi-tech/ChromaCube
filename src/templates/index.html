@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rubik's Cube Tracker</title>
+  <style>
+    /* Reset some defaults */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #1e1e2f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #00d4ff;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+    }
+
+    .video-container {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    #cube-feed {
+      border-radius: 12px;
+      border: 3px solid #00d4ff;
+      max-width: 640px;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(3, 60px);
+      gap: 5px;
+      padding: 10px;
+      background: #2a2a3d;
+      border-radius: 12px;
+      border: 2px solid #00d4ff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
+    .grid-cell {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #000;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #00ff99;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.8rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Rubik's Cube Tracker</h1>
+  </header>
+
+  <div class="video-container">
+    <img id="cube-feed" src="{{ url_for('video_feed') }}" alt="Rubik's Cube Video Feed">
+
+    <div class="grid-container">
+      {% for i in range(3) %}
+        {% for j in range(3) %}
+          <div class="grid-cell" id="cell-{{ i }}-{{ j }}" style="background-color: black;"></div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="status">
+    Current Center Color: <span id="center-color">Unknown</span>
+  </div>
+
+  <footer>
+    &copy; 2026 Yash Joshi - Rubik's Cube Tracker
+  </footer>
+
+  <script>
+    // Optional: fetch color updates from server periodically
+    async function updateColors() {
+      try {
+        const res = await fetch('/current_colors');
+        if(res.ok){
+          const data = await res.json();
+          // update 3x3 grid
+          for(let i=0;i<3;i++){
+            for(let j=0;j<3;j++){
+              const color = data.stickers[i][j]; // expect format "rgb(r,g,b)"
+              document.getElementById(`cell-${i}-${j}`).style.backgroundColor = color;
+            }
+          }
+          document.getElementById('center-color').innerText = data.center_color_name;
+        }
+      } catch(err) {
+        console.error(err);
+      }
+    }
+
+    setInterval(updateColors, 200); // update every 200ms
+  </script>
+</body>
+</html>
+
